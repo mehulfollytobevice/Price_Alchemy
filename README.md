@@ -1,4 +1,5 @@
-# Price Alchemy - Predicting suggested prices for sellers:
+# Price Alchemy: 
+> ### End-to-End Price Prediction System
 
 - This repository contains the code for **"Price Alchemy Project"**.
 - Using this project, we can intelligently suggest optimal price points for a diverse array of products listed on Mercari.
@@ -10,16 +11,41 @@
 - In this project we have used the **Mercari Price Suggestion Challenge** to train our model. 
 
 ## ⏳ Dataset
-- There are different versions of the Flickr Dataset. We use the Flickr8K dataset which has 8,000 images that are each paired with five different captions which provide clear descriptions of the salient entities and events.
-- Download from here: https://github.com/jbrownlee/Datasets/releases/download/Flickr8k/Flickr8k_Dataset.zip
-- Download the text descriptions: https://github.com/jbrownlee/Datasets/releases/download/Flickr8k/Flickr8k_text.zip
-- Download the dataset and place it in the main directory.
+The dataset provided consists of information on product listings, designed for a predictive modeling. Here's an overview based on the provided information:
+
+1. **Data Format**: The dataset is split into two files, `train.tsv` and `test.tsv`, both in a tab-delimited format.
+
+2. **Data Fields**:
+   - `train_id` or `test_id`: Unique identifiers for each listing.
+   - `name`: The title of the listing. Text resembling prices has been removed to prevent data leakage.
+   - `item_condition_id`: Indicates the condition of the item as provided by the seller.
+   - `category_name`: Specifies the category of the listing.
+   - `brand_name`: Denotes the brand of the item, if available.
+   - `price`: The target variable representing the sale price of the item in USD. Present only in the training dataset.
+   - `shipping`: Binary variable indicating whether the shipping fee is paid by the seller (1) or the buyer (0).
+   - `item_description`: Provides a full description of the item. Text resembling prices has been removed to prevent data leakage.
+
+3. **Target Variable**: The objective of the competition is to predict the sale price (`price`) of the listings using the provided features.
+
+4. **Features**: Features available for prediction include the listing's title (`name`), item condition (`item_condition_id`), category (`category_name`), brand (`brand_name`), shipping information (`shipping`), and item description (`item_description`).
+
+5. **Evaluation**: Model performance is likely assessed using metrics such as Root Mean Squared Log Error (RMSLE) 
+
+6. **Leakage Prevention**: Measures have been taken to remove text resembling prices from both the listing title and item description to prevent the model from inadvertently learning from the target variable during training.
 
 ## 📝 Description of files:
 
-- <b>main.py -</b> This is the main file of the project. It contains the code to train the image captioning model and save it into the '/data/' directory.
-- <b>image_captioner.ipynb -</b> This file contains the code for our image captioning application. The application is built using ipywidgets and Voila. This notebook can be directly deployed onto Binder where it gets converted into an interactive application. For more information, see the next section.
-- <b>requirements.txt -</b> This file contains the dependencies required to run the image captioning application (image_captioner.ipynb).
+- __data/:__ This directory contains subdirectories for raw and processed data. Raw data files (train.tsv and test.tsv) are stored in the raw/ subdirectory, while processed data files (train.csv and test.csv) are stored in the processed/ subdirectory. Intermediate data files generated during data preprocessing can be stored in the interim/ subdirectory if necessary.
+
+- __notebooks/:__ Jupyter notebooks for exploratory data analysis, data preprocessing, model development, and evaluation are stored in this directory.
+
+- __src/:__ This directory contains subdirectories for different aspects of the project's source code, including data loading and preprocessing (data/), modeling (modeling/), and model evaluation (evaluation/). Each subdirectory contains Python modules with relevant functions and classes.
+
+- __models/:__ Saved model files generated during model training are stored in this directory.
+
+- __requirements.txt:__ A text file listing the Python package dependencies required to run the project.
+
+- __README.md:__ Documentation providing an overview of the project, instructions for setup and usage, and any additional information relevant to users and contributors.
 
 ## :hammer_and_wrench: Requirements
 * Python 3.5+
