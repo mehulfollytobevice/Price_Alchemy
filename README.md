@@ -62,7 +62,7 @@ The dataset provided consists of information on product listings, designed for a
 
 ## Contributors <img src="https://raw.githubusercontent.com/TheDudeThatCode/TheDudeThatCode/master/Assets/Developer.gif" width=35 height=25> 
 -	Aryan Deore
--	Bishal Agrawal 
+-	Bishal Agrawal.
 -	Mehul Jain 
 -	Priyanka Dipak Gujar
 -	Rakesh Rathod
