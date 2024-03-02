@@ -1,4 +1,3 @@
 data/
 notebooks/.ipynb_checkpoints/
 logs/**/*
-# ignore all .log files in logs folder
