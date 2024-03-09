@@ -2,3 +2,4 @@ data/
 notebooks/.ipynb_checkpoints/
 .conda
 logs/**/*.log
+.DS_Store
