@@ -164,18 +164,18 @@ if __name__=="__main__":
         logging.basicConfig(filename=os.path.join(logs_dir, f'logfile_{new_uuid}.log'), level=logging.INFO)
         
         # load the data 
-        logging.debug('Reading csv data')
+        logging.info('Reading csv data')
         df= load_data(config.GCP_URL)
 
         # validate the schema using pandera
-        logging.debug('Validating data using pandera.')
+        logging.info('Validating data using pandera.')
         result_pandera=pandera_validate(df)
 
         # print(f'Passed pandera data validation check: {result_pandera}')
         logging.info(f'Data validation check result -  pandera : {result_pandera} \n')
 
         # run additional tests using great expectations
-        logging.debug('Validating data using great expectations.')
+        logging.info('Validating data using great expectations.')
         result_gx= great_exp_validate(df)
 
         # print(f'Passed great expectations data validation check: {result_gx}')
