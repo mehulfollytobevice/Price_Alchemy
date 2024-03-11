@@ -1,0 +1,9 @@
+INFO:root:Data validation check result -  pandera : True 
+
+INFO:great_expectations.data_context.data_context.context_factory:Could not find local file-backed GX project
+INFO:great_expectations.data_context.types.base:Created temporary directory '/var/folders/ln/ryk6y70j7rg4321f6rt3hxx80000gn/T/tmpjd8xh15_' for ephemeral docs site
+INFO:great_expectations.datasource.fluent.config:Loading 'datasources' ->
+[]
+INFO:great_expectations.validator.validator:	29 expectation(s) included in expectation_suite.
+INFO:great_expectations.validator.validator:	29 expectation(s) included in expectation_suite.
+INFO:root:Data validation check result -  GX : True
