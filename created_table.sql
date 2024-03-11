@@ -1,5 +1,5 @@
 CREATE TABLE product_listing (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT NOT NULL AUTO_INCREMENT  PRIMARY KEY,
     train_id INT,
     name VARCHAR(255),
     item_condition_id INT,
@@ -11,3 +11,7 @@ CREATE TABLE product_listing (
     created_at DATETIME,
     last_updated_at DATETIME
 );
+
+
+-- INSERT INTO product_listing (train_id, name, item_condition_id, category_name, brand_name, price, shipping, item_description, created_at, last_updated_at)
+-- VALUES (1, 'Product Name', 1, 'Category', 'Brand', 10.99, 1, 'Description', NOW(), NOW());
