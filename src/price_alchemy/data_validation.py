@@ -8,11 +8,9 @@ import config
 # data validation libraries
 import pandera as pa
 import great_expectations as gx
-import matplotlib.pyplot as plt
 from great_expectations.checkpoint import Checkpoint
 import warnings
 warnings.filterwarnings('ignore')
-
 
 def load_data(gcp_url):
     
