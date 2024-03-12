@@ -1,7 +1,7 @@
 # Price Alchemy: 
 > ### End-to-End Price Prediction System
 
-![Tests](https://github.com/mCodingLLC/SlapThatLikeButton-TestingStarterProject/actions/workflows/tests.yml/badge.svg)
+![Tests](https://github.com/mehulfollytobevice/Price_Alchemy/actions/workflows/tests.yml/badge.svg)
 
 - This repository contains the code for **"Price Alchemy Project"**.
 - Using this project, we can intelligently suggest optimal price points for a diverse array of products listed on Mercari.
