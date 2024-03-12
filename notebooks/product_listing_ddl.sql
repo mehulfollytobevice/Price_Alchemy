@@ -9,7 +9,7 @@ CREATE TABLE product_listing (
     shipping INT,
     item_description TEXT,
     created_at DATETIME,
-    last_updated_at DATETIME
+    last_updated_at TINYINT
 );
 
 
