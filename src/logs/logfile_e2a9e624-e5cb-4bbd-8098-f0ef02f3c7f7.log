@@ -1,0 +1,5 @@
+2024-03-13 14:07:00,045 - INFO - RUNNING DATA PREPROCESSING
+2024-03-13 14:07:00,045 - INFO - Reading data
+2024-03-13 14:07:08,495 - INFO - Preprocessing started
+2024-03-13 14:07:08,703 - INFO - Preprocessing complete. Total time taken:0.20836496353149414 seconds
+2024-03-13 14:07:08,703 - INFO - Preprocessed X shape:(99, 1195), y shape:(99,)
