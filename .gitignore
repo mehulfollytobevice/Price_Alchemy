@@ -10,3 +10,5 @@ notebooks/cred.py
 src/price_alchemy/cred.py
 notebooks/__pycache__/cred.cpython-39.pyc
 src/price_alchemy/__pycache__/cred.cpython-39.pyc
+logs/**/*.log
+.DS_Store
