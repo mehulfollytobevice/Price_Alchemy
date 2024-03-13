@@ -1,5 +1,14 @@
 data/
 notebooks/.ipynb_checkpoints/
 .conda
+ringed-reserve-416823-b54bbb8174c1.json
+.mypy_cache/
+.pytest_cache/
+.tox
+.coverage
+notebooks/cred.py
+src/price_alchemy/cred.py
+notebooks/__pycache__/cred.cpython-39.pyc
+src/price_alchemy/__pycache__/cred.cpython-39.pyc
 logs/**/*.log
 .DS_Store
