@@ -3,8 +3,7 @@ import pandas as pd
 import numpy as np
 import logging
 import time
-from logging_setup import log_setup
-from data_loading import load_data_sql,load_data_gcp
+from price_alchemy import logging_setup, cred, data_loading
 
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
@@ -146,12 +145,12 @@ def data_prep_v1(df):
 if __name__=="__main__":
 
     # setup log configuration
-    log_setup()
+    logging_setup.log_setup()
     logging.info('RUNNING DATA PREPROCESSING')
 
     # load the data from GCP SQL table
     logging.info('Reading data')
-    df= load_data_sql()
+    df= data_loading.load_data_sql(cred.MYSQL_PASSWORD)
 
     # preprocess the data 
     logging.info('Preprocessing started')

@@ -5,14 +5,13 @@ from google.cloud import storage
 from datetime import datetime
 import mysql.connector
 from typing import Iterable, Any
-from cred import MYSQL_PASSWORD
 import logging
 
-def load_data_sql():
+def load_data_sql(PASSWORD):
 
     connection = mysql.connector.connect(
         user='root', 
-        password=MYSQL_PASSWORD, 
+        password=PASSWORD, 
         host='34.30.80.103',
         database='mercari_db')
 

@@ -3,9 +3,7 @@ import logging
 import uuid
 import os
 import pandas as pd
-import config
-from logging_setup import log_setup
-from data_loading import load_data_sql,load_data_gcp
+from price_alchemy import config, logging_setup, data_loading
 
 # data validation libraries
 import pandera as pa
@@ -139,12 +137,12 @@ if __name__=="__main__":
     try:
 
         # setup log configuration
-        log_setup()
+        logging_setup.log_setup()
         logging.info('RUNNING DATA VALIDATION')
 
         # load the data 
         logging.info('Reading csv data')
-        df= load_data_gcp(config.GCP_URL)
+        df= data_loading.load_data_gcp(config.GCP_URL)
 
         # validate the schema using pandera
         logging.info('Validating data using pandera.')
