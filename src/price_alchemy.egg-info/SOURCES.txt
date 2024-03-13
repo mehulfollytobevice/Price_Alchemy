@@ -4,7 +4,11 @@ setup.cfg
 setup.py
 src/price_alchemy/__init__.py
 src/price_alchemy/config.py
+src/price_alchemy/cred.py
+src/price_alchemy/data_loading.py
+src/price_alchemy/data_preprocessing.py
 src/price_alchemy/data_validation.py
+src/price_alchemy/logging_setup.py
 src/price_alchemy.egg-info/PKG-INFO
 src/price_alchemy.egg-info/SOURCES.txt
 src/price_alchemy.egg-info/dependency_links.txt

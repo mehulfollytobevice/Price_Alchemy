@@ -1,9 +1,10 @@
 # import libraries
 import pandas as pd
 import numpy as np
-import sqlite3
-from google.cloud import storage 
-from datetime import datetime
+import logging
+import time
+from price_alchemy import logging_setup, data_loading, config
+
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import re
@@ -11,34 +12,7 @@ from tqdm import tqdm
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-import mysql.connector
-from cred import MYSQL_PASSWORD
 
-def load_data():
-
-    connection = mysql.connector.connect(
-        user='root', 
-        password=MYSQL_PASSWORD, 
-        host='34.30.80.103',
-        database='mercari_db')
-
-    cursor = connection.cursor()
-
-    # Execute your query
-    query1 = "SELECT * FROM product_listing"
-    cursor.execute(query1)
-
-    # Fetch column names
-    column_names = [i[0] for i in cursor.description]
-
-    # Create a DataFrame from the query result
-    frame = pd.DataFrame(cursor.fetchall(), columns=column_names)
-
-    # Close cursor and connection
-    cursor.close()
-    connection.close()
-
-    return frame
 
 # HELPER FUNCTIONS
 
@@ -83,9 +57,9 @@ def preprocess(data):
             #dis=re.sub(r'\@[a-zA-Z0-9]\w+'," ",dis) # removing account mentions actually decreases the accuracy of the model 
             dis=re.sub('[^a-zA-Z]'," ",dis) #removing punctuation marks and numbers
             dis=dis.lower() # converting into lower case
-            dis=dis.split() # splitting 
-            dis=[ps.stem(word) for word in dis if not word in set(stopwords.words("english"))]  #stemming the words to trim down the number of words
-            dis=' '.join(dis)
+            dis_list=dis.split() # splitting 
+            dis_list=[ps.stem(word) for word in dis_list if not word in set(stopwords.words("english"))]  #stemming the words to trim down the number of words
+            dis=' '.join(dis_list)
             corpus.append(dis)
             
         except:
@@ -170,16 +144,24 @@ def data_prep_v1(df):
 
 if __name__=="__main__":
 
-    print('Loading data')
-    # load the data from GCP SQL table
-    df= load_data()
-    print('Data loaded')
-    print(df.head())
+    # setup log configuration
+    logging_setup.log_setup()
+    logging.info('RUNNING DATA PREPROCESSING')
 
-    print('Preprocess data')
+    # load the data from GCP SQL table
+    logging.info('Reading data')
+    try:
+        df= data_loading.load_data_sql('MYSQL_PASSWORD')
+    except:
+        df= data_loading.load_data_gcp(config.GCP_URL)
+
     # preprocess the data 
-    X,y= data_prep_v1(df)
-    print('Data preprocessed')
+    logging.info('Preprocessing started')
+    start= time.time()
+    X,y= data_prep_v1(df.iloc[:100,:])
+    end= time.time()
+    logging.info(f'Preprocessing complete. Total time taken:{end-start} seconds')
+    logging.info(f'Preprocessed X shape:{X.shape}, y shape:{y.shape}')
 
 
 

@@ -3,7 +3,7 @@ import logging
 import uuid
 import os
 import pandas as pd
-import config
+from price_alchemy import config, logging_setup, data_loading
 
 # data validation libraries
 import pandera as pa
@@ -11,16 +11,6 @@ import great_expectations as gx
 from great_expectations.checkpoint import Checkpoint
 import warnings
 warnings.filterwarnings('ignore')
-
-def load_data(gcp_url):
-    
-    try:
-
-        df = pd.read_csv(gcp_url)
-        return df 
-    
-    except:
-        logging.error('Data not available')
 
 def great_exp_validate(df):
     
@@ -146,24 +136,13 @@ if __name__=="__main__":
 
     try:
 
-        # Get the parent directory of the current directory (src)
-        parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+        # setup log configuration
+        logging_setup.log_setup()
+        logging.info('RUNNING DATA VALIDATION')
 
-        # Define the logs directory path
-        logs_dir = os.path.join(parent_dir, 'logs')
-
-        # Create the logs directory if it doesn't exist
-        os.makedirs(logs_dir, exist_ok=True)
-
-        # generate unique id
-        new_uuid = uuid.uuid4()
-
-        # Configure logging to log to a file in the logs directory
-        logging.basicConfig(filename=os.path.join(logs_dir, f'logfile_{new_uuid}.log'), level=logging.INFO)
-        
         # load the data 
         logging.info('Reading csv data')
-        df= load_data(config.GCP_URL)
+        df= data_loading.load_data_gcp(config.GCP_URL)
 
         # validate the schema using pandera
         logging.info('Validating data using pandera.')

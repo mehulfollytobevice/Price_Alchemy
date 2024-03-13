@@ -1,4 +1,7 @@
 pandas>=2
+sqlalchemy
+mysql-connector-python>8
+google-cloud-storage
 great-expectations
 pandera
 
