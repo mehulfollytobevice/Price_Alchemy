@@ -1,4 +1,6 @@
 pandas>=2
+nltk
+scikit-learn
 sqlalchemy
 mysql-connector-python>8
 google-cloud-storage
