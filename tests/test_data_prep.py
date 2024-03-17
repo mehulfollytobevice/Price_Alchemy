@@ -3,6 +3,9 @@ import numpy as np
 from price_alchemy import config, data_loading, data_preprocessing
 import pandas as pd
 
+
+# note:
+# parameterize this function for additional testing in future
 # test function to split hierarchical category
 def test_split_cat():
 
