@@ -14,6 +14,8 @@ Classifier: Programming Language :: Python :: 3 :: Only
 Classifier: Programming Language :: Python :: 3.9
 Requires-Python: >=3.9
 Requires-Dist: pandas>=2
+Requires-Dist: nltk
+Requires-Dist: scikit-learn
 Requires-Dist: sqlalchemy
 Requires-Dist: mysql-connector-python>8
 Requires-Dist: google-cloud-storage

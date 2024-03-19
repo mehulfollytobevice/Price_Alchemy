@@ -15,4 +15,5 @@ src/price_alchemy.egg-info/dependency_links.txt
 src/price_alchemy.egg-info/not-zip-safe
 src/price_alchemy.egg-info/requires.txt
 src/price_alchemy.egg-info/top_level.txt
+tests/test_data_prep.py
 tests/test_data_val.py
