@@ -1,4 +1,6 @@
 data/
+working_data/
+plugins/
 logs/
 logs/**/*.log
 src/price_alchemy/cred.py
@@ -6,6 +8,7 @@ notebooks/cred.py
 notebooks/__pycache__/cred.cpython-39.pyc
 src/price_alchemy/__pycache__/cred.cpython-39.pyc
 notebooks/.ipynb_checkpoints/
+dags/price_alchemy/
 .conda
 ringed-reserve-416823-b54bbb8174c1.json
 .mypy_cache/
@@ -13,3 +16,5 @@ ringed-reserve-416823-b54bbb8174c1.json
 .tox
 .coverage
 .DS_Store
+.ipynb_checkpoints
+
