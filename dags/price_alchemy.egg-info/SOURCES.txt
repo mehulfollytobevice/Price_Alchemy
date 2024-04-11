@@ -4,7 +4,6 @@ setup.cfg
 setup.py
 dags/price_alchemy/__init__.py
 dags/price_alchemy/config.py
-dags/price_alchemy/cred.py
 dags/price_alchemy/data_loading.py
 dags/price_alchemy/data_preprocessing.py
 dags/price_alchemy/data_validation.py

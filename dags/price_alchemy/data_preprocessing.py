@@ -81,10 +81,11 @@ def text_preprocess_v2(text) :
     nlp = spacy.load("en_core_web_sm")
 
     # pass data through the pipeline
-    docs= nlp.pipe(text, n_process=4 )
+    docs= nlp.pipe(text)
+    #  ,n_process=4 )
 
     # apply rules on the data 
-    for doc in tqdm(docs):
+    for doc in docs:
 
         p=[]
         for tok in doc:
@@ -134,7 +135,7 @@ def sample_df(df: pd.DataFrame, sample_size: int, random_state: int = 42, replac
 
     return df_sample
 
-
+# function to convert text to vectors
 class WordVectorTransformer(TransformerMixin,BaseEstimator):
     def __init__(self, model="en_core_web_lg"):
         self.model = model
@@ -144,7 +145,64 @@ class WordVectorTransformer(TransformerMixin,BaseEstimator):
 
     def transform(self,X):
         nlp = spacy.load(self.model)
-        return np.concatenate([nlp(doc).vector.reshape(1,-1) for doc in X])
+        return np.concatenate([nlp(doc).vector.reshape((1,-1)) for doc in X])
+
+# function to perform basic data manipulation and preprocessing
+def data_manipulation(df):
+
+    # Preprocessing steps
+    # 1. Remove rows with missing values in the 'price' column
+    df['category_name'].replace('', np.nan, inplace=True)
+    m_df=df.dropna(subset=['price','category_name'])
+
+    # 2. Convert 'price' to numeric
+    m_df['price'] = pd.to_numeric(m_df['price'], errors='coerce')
+
+    # 3. Remove rows with price <= 0
+    m_df = m_df[m_df['price'] > 0]
+
+    # 4. Convert 'shipping' to categorical
+    m_df['shipping'] = m_df['shipping'].astype('category')
+
+    # 5. Convert 'item_condition_id' to categorical
+    m_df['item_condition_id'] = m_df['item_condition_id'].astype('category')
+
+    # 6. Drop created and updated at
+    try:
+        m_df = m_df.drop(columns=['created_at', 'last_updated_at'])
+    except:
+        pass
+
+    # 7. fill null text values
+    m_df['brand_name']=m_df['brand_name'].fillna('Not known')
+    m_df['name']=m_df['name'].fillna('No name')
+    m_df['item_description']=m_df['item_description'].fillna('No description yet')
+
+    # 8. split hierarchical category into sub-categories
+    m_df['category_split']= m_df['category_name'].apply(lambda x: split_cat(x))
+
+    # category 
+    m_df['parent_category']=m_df['category_split'].apply(lambda x: x[0])
+    m_df['child_category']=m_df['category_split'].apply(lambda x: x[1])
+    m_df['grandchild_category']=m_df['category_split'].apply(lambda x: x[2])
+
+    # # 9. select the columns
+    # m_df=m_df[['name','item_condition_id','brand_name',
+    #         'parent_category','child_category','grandchild_category',
+    #         'shipping','item_description','price']]
+    
+    return m_df
+
+# function to apply input column transform
+def feature_transform(df, column_trans):
+
+    # independent and dependent variable
+    X=df.drop(columns=['price'])
+    y=df['price']
+
+    X= column_trans.fit_transform(X)
+
+    return X, y
 
 # MAIN PREPROCESSING FUNCTION
 
@@ -153,6 +211,7 @@ def data_prep_v1(df, save_file=False):
     # Preprocessing steps
     # 1. Remove rows with missing values in the 'price' column
     df['category_name'].replace('', np.nan, inplace=True)
+    
     m_df=df.dropna(subset=['price','category_name'])
 
     # 2. Convert 'price' to numeric
@@ -300,6 +359,39 @@ def data_prep_v2(df, save_file=False):
     if save_file:
         dump_preprocessed_data(X, y.values, config.PREPROCESSED_DATA)
         
+    return X, y
+
+def preprocessing_pipe(df,text_prep_func, column_trans, save_file=False):
+
+    # basic preprocessing on the data
+    df= data_manipulation(df)
+
+    # select the columns
+    df=df[['name','item_condition_id','brand_name',
+            'parent_category','child_category','grandchild_category',
+            'shipping','item_description','price']]
+
+    # preprocess text columns
+    raw_text= df['name'].to_list()
+    data_final= text_prep_func(raw_text)
+    df['name']= data_final
+
+    # process item_description column
+    raw_text= df['item_description'].to_list()
+    data_final= text_prep_func(raw_text)
+    df['item_description']= data_final
+
+    # independent and dependent variable
+    X=df.drop(columns=['price'])
+    y=df['price']
+
+    # transform the data using column transformer
+    X= column_trans.fit_transform(X)
+
+    # save the data 
+    if save_file:
+        dump_preprocessed_data(X, y.values, config.PREPROCESSED_DATA)
+
     return X, y
 
 # function to save the data

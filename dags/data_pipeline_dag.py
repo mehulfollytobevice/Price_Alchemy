@@ -51,14 +51,21 @@ with DAG('Data_Pipeline',
         op_kwargs={"df":load_data_task.output}
     )
 
+    # sample a part of the dataframe
+    data_sampling_task = PythonOperator(
+        task_id='data_sampling_task',
+        python_callable=data_preprocessing.sample_df,
+        op_kwargs={"df":load_data_task.output,"sample_size":config.NUM_SAMPLES},
+    )
+
     # Task to perform data preprocessing, depends on 'load_data_task'
     data_preprocessing_task = PythonOperator(
         task_id='data_preprocessing_task',
-        python_callable=data_preprocessing.data_prep_v1,
-        op_kwargs={"df":load_data_task.output},
+        python_callable=data_preprocessing.preprocessing_pipe,
+        op_kwargs={"df":data_sampling_task.output,"text_prep_func":config.TEXT_PREP_OPTS['nltk'], "column_trans":config.COL_TRANS_OPTS['tfidf']},
         do_xcom_push= False
     )
 
 
     # Set task dependencies
-    load_data_task >> data_validation_pandera_task >> data_validation_gx_task >> data_preprocessing_task 
+    load_data_task  >> data_validation_pandera_task >> data_validation_gx_task >> data_sampling_task >> data_preprocessing_task 

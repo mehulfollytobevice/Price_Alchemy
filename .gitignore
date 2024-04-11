@@ -8,7 +8,8 @@ notebooks/cred.py
 notebooks/__pycache__/cred.cpython-39.pyc
 src/price_alchemy/__pycache__/cred.cpython-39.pyc
 notebooks/.ipynb_checkpoints/
-dags/price_alchemy/
+mlruns/
+mlartifacts/
 .conda
 ringed-reserve-416823-b54bbb8174c1.json
 .mypy_cache/
