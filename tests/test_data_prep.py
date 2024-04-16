@@ -21,8 +21,10 @@ def test_data_preprocessing():
     sample= df.iloc[:100, :]
 
     # validate that the preprocessing function works
-    X, y =data_preprocessing.data_prep_v1(sample)
-    X=X.toarray()
+    text_prep= config.TEXT_PREP_OPTS['spacy']
+    col_trans= 'tfidf_chargram'
+
+    X,y= data_preprocessing.preprocessing_pipe(sample, text_prep, config.COL_TRANS_OPTS[col_trans])
 
     # test conditions
     assert X.shape[0]<=sample.shape[0] # some rows might be dropped because of null values so less than equal to is used 

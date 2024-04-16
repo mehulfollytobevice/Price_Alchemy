@@ -8,6 +8,8 @@ dags/price_alchemy/data_loading.py
 dags/price_alchemy/data_preprocessing.py
 dags/price_alchemy/data_validation.py
 dags/price_alchemy/logging_setup.py
+dags/price_alchemy/model_dispatcher.py
+dags/price_alchemy/train.py
 dags/price_alchemy.egg-info/PKG-INFO
 dags/price_alchemy.egg-info/SOURCES.txt
 dags/price_alchemy.egg-info/dependency_links.txt

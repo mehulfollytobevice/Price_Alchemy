@@ -14,7 +14,6 @@ from tqdm import tqdm
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.base import BaseEstimator, TransformerMixin
 import uuid
 
 # HELPER FUNCTIONS
@@ -135,18 +134,6 @@ def sample_df(df: pd.DataFrame, sample_size: int, random_state: int = 42, replac
 
     return df_sample
 
-# function to convert text to vectors
-class WordVectorTransformer(TransformerMixin,BaseEstimator):
-    def __init__(self, model="en_core_web_lg"):
-        self.model = model
-
-    def fit(self,X,y=None):
-        return self
-
-    def transform(self,X):
-        nlp = spacy.load(self.model)
-        return np.concatenate([nlp(doc).vector.reshape((1,-1)) for doc in X])
-
 # function to perform basic data manipulation and preprocessing
 def data_manipulation(df):
 
@@ -186,6 +173,9 @@ def data_manipulation(df):
     m_df['child_category']=m_df['category_split'].apply(lambda x: x[1])
     m_df['grandchild_category']=m_df['category_split'].apply(lambda x: x[2])
 
+    # Concatenate the two columns
+    m_df['text'] = m_df['name'].str.cat(m_df['item_description'], sep=' ')
+
     # # 9. select the columns
     # m_df=m_df[['name','item_condition_id','brand_name',
     #         'parent_category','child_category','grandchild_category',
@@ -205,181 +195,37 @@ def feature_transform(df, column_trans):
     return X, y
 
 # MAIN PREPROCESSING FUNCTION
-
-def data_prep_v1(df, save_file=False):
-
-    # Preprocessing steps
-    # 1. Remove rows with missing values in the 'price' column
-    df['category_name'].replace('', np.nan, inplace=True)
-    
-    m_df=df.dropna(subset=['price','category_name'])
-
-    # 2. Convert 'price' to numeric
-    m_df['price'] = pd.to_numeric(m_df['price'], errors='coerce')
-
-    # 3. Remove rows with price <= 0
-    m_df = m_df[m_df['price'] > 0]
-
-    # 4. Convert 'shipping' to categorical
-    m_df['shipping'] = m_df['shipping'].astype('category')
-
-    # 5. Convert 'item_condition_id' to categorical
-    m_df['item_condition_id'] = m_df['item_condition_id'].astype('category')
-
-    # 6. Drop created and updated at
-    try:
-        m_df = m_df.drop(columns=['created_at', 'last_updated_at'])
-    except:
-        pass
-
-    # 7. fill null text values
-    m_df['brand_name']=m_df['brand_name'].fillna('Not known')
-    m_df['name']=m_df['name'].fillna('No name')
-    m_df['item_description']=m_df['item_description'].fillna('No description yet')
-
-    # 8. split hierarchical category into sub-categories
-    m_df['category_split']= m_df['category_name'].apply(lambda x: split_cat(x))
-
-    # category 
-    m_df['parent_category']=m_df['category_split'].apply(lambda x: x[0])
-    m_df['child_category']=m_df['category_split'].apply(lambda x: x[1])
-    m_df['grandchild_category']=m_df['category_split'].apply(lambda x: x[2])
-
-    # 9. select the columns
-    m_df=m_df[['name','item_condition_id','brand_name',
-            'parent_category','child_category','grandchild_category',
-            'shipping','item_description','price']]
-
-    # 10. process text columns
-    # process name column
-    raw_text= m_df['name'].to_list()
-    data_final= process_name(raw_text)
-    m_df['name']= data_final
-
-    # process item_description column
-    raw_text= m_df['item_description'].to_list()
-    data_final= text_preprocess_v2(raw_text)
-    m_df['item_description']= data_final
-
-    # 11. Apply column transformer and preprocessing methods
-    # apply column transformer
-    column_trans = ColumnTransformer([('categories', OrdinalEncoder(dtype='int'),['brand_name','parent_category', 'child_category', 'grandchild_category']),
-                ('name', CountVectorizer(max_features=10000), 'name'),
-                ('item_desc',TfidfVectorizer(max_features=10000),'item_description')
-                ],
-                remainder='passthrough',
-                verbose_feature_names_out=True)
-    
-
-    # independent and dependent variable
-    X=m_df.drop(columns=['price'])
-    y=m_df['price']
-
-    X= column_trans.fit_transform(X)
-
-    # save the data 
-    if save_file:
-        dump_preprocessed_data(X, y.values, config.PREPROCESSED_DATA)
-        
-    return X, y
-
-# data preprocessing function version 2
-def data_prep_v2(df, save_file=False):
-
-    # Preprocessing steps
-    # 1. Remove rows with missing values in the 'price' column
-    df['category_name'].replace('', np.nan, inplace=True)
-    m_df=df.dropna(subset=['price','category_name'])
-
-    # 2. Convert 'price' to numeric
-    m_df['price'] = pd.to_numeric(m_df['price'], errors='coerce')
-
-    # 3. Remove rows with price <= 0
-    m_df = m_df[m_df['price'] > 0]
-
-    # 4. Convert 'shipping' to categorical
-    m_df['shipping'] = m_df['shipping'].astype('category')
-
-    # 5. Convert 'item_condition_id' to categorical
-    m_df['item_condition_id'] = m_df['item_condition_id'].astype('category')
-
-    # 6. Drop created and updated at
-    try:
-        m_df = m_df.drop(columns=['created_at', 'last_updated_at'])
-    except:
-        pass
-
-    # 7. fill null text values
-    m_df['brand_name']=m_df['brand_name'].fillna('Not known')
-    m_df['name']=m_df['name'].fillna('No name')
-    m_df['item_description']=m_df['item_description'].fillna('No description yet')
-
-    # 8. split hierarchical category into sub-categories
-    m_df['category_split']= m_df['category_name'].apply(lambda x: split_cat(x))
-
-    # category 
-    m_df['parent_category']=m_df['category_split'].apply(lambda x: x[0])
-    m_df['child_category']=m_df['category_split'].apply(lambda x: x[1])
-    m_df['grandchild_category']=m_df['category_split'].apply(lambda x: x[2])
-
-    # 9. select the columns
-    m_df=m_df[['name','item_condition_id','brand_name',
-            'parent_category','child_category','grandchild_category',
-            'shipping','item_description','price']]
-
-    # 10. process text columns
-    # process name column
-    raw_text= m_df['name'].to_list()
-    data_final= text_preprocess_v2(raw_text)
-    m_df['name']= data_final
-
-    # process item_description column
-    raw_text= m_df['item_description'].to_list()
-    data_final= text_preprocess_v2(raw_text)
-    m_df['item_description']= data_final
-
-    # 11. Apply column transformer and preprocessing methods
-    # apply column transformer
-    column_trans = ColumnTransformer([('categories', OrdinalEncoder(dtype='int'),['parent_category', 'child_category', 'grandchild_category']),
-                ('text', WordVectorTransformer(), 'item_description'),
-                ('name',WordVectorTransformer(),'name'),
-                # ('name', CountVectorizer(max_features=1000), 'name')
-                ],
-                remainder='drop',
-                verbose_feature_names_out=True)
-    
-
-    # independent and dependent variable
-    X=m_df.drop(columns=['price'])
-    y=m_df['price']
-
-    X= column_trans.fit_transform(X)
-
-    # save the data 
-    if save_file:
-        dump_preprocessed_data(X, y.values, config.PREPROCESSED_DATA)
-        
-    return X, y
-
 def preprocessing_pipe(df,text_prep_func, column_trans, save_file=False):
 
     # basic preprocessing on the data
     df= data_manipulation(df)
 
     # select the columns
-    df=df[['name','item_condition_id','brand_name',
+    df=df[['item_condition_id','brand_name',
             'parent_category','child_category','grandchild_category',
-            'shipping','item_description','price']]
+            'shipping','text','price']]
 
     # preprocess text columns
-    raw_text= df['name'].to_list()
-    data_final= text_prep_func(raw_text)
-    df['name']= data_final
+    if text_prep_func=="version_1":
+        process_text= text_preprocess_v1
+    
+    elif text_prep_func=="version_2":
+        process_text= text_preprocess_v2
 
-    # process item_description column
-    raw_text= df['item_description'].to_list()
-    data_final= text_prep_func(raw_text)
-    df['item_description']= data_final
+    # process the name column
+    # raw_text= df['name'].to_list()
+    # data_final= process_text(raw_text)
+    # df['name']= data_final
+
+    # # process item_description column
+    # raw_text= df['item_description'].to_list()
+    # data_final= process_text(raw_text)
+    # df['item_description']= data_final
+
+    # process the text column
+    raw_text= df['text'].to_list()
+    data_final= process_text(raw_text)
+    df['text']= data_final
 
     # independent and dependent variable
     X=df.drop(columns=['price'])
@@ -423,7 +269,7 @@ if __name__=="__main__":
     # sample the dataset if it's larger than 10000
     if df.shape[0]>10000:
         logging.info('Sampling data since df_size > 10000.')
-        df_sampled= sample_df(df, sample_size=20000)
+        df_sampled= sample_df(df, sample_size=200)
         sample= True
     else:
         df_sampled= df.copy()
@@ -431,7 +277,7 @@ if __name__=="__main__":
     # preprocess the data 
     logging.info('Preprocessing started')
     start= time.time()
-    X,y= data_prep_v2(df_sampled)
+    X,y= preprocessing_pipe( df_sampled, config.TEXT_PREP_OPTS['nltk'], config.COL_TRANS_OPTS['tfidf_concat'])
     end= time.time()
     logging.info(f'Preprocessing complete. Total time taken:{end-start} seconds')
     logging.info(f'Preprocessed X shape:{X.shape}, y shape:{y.shape}')
@@ -439,7 +285,7 @@ if __name__=="__main__":
     # save data
     filename= config.PREPROCESSED_DATA
     if sample: 
-        filename=  f"sample_vector_" + filename
+        filename=  f"sample_" + filename
     
     logging.info('Saving data.')
     dump_preprocessed_data(X, y.values, filename)
