@@ -1,32 +1,43 @@
-# this file contains code for training a model
 import numpy as np
-import pandas as pd
 from scipy.sparse import csr_matrix, csc_matrix
 import logging
 import time
+from functools import partial
+from hyperopt import hp,fmin,tpe,Trials
+from hyperopt.pyll.base import scope
 import price_alchemy.data_preprocessing as dp
 import price_alchemy.config as cfg
 import price_alchemy.logging_setup as ls
 import price_alchemy.data_loading as dl
 import price_alchemy.model_dispatcher as md
+import price_alchemy.train as tr
 from sklearn.model_selection import KFold
-from sklearn.metrics import mean_squared_error, r2_score, mean_squared_log_error
+from sklearn.metrics import mean_squared_log_error
 
-def train_model(X, y, model, num_folds=5):
+
+# create the optimize function 
+def optimize(params, X, y, model):
 
     if isinstance(X, (csr_matrix, csc_matrix)):
-        
+            
         # Convert sparse matrix to numpy array
         X = X.toarray()
 
     # kfold cross validation
-    kf = KFold(n_splits=num_folds, shuffle=True, random_state=42)
+    kf = KFold(n_splits=5, shuffle=True, random_state=42)
 
     # metrics scores
-    mse_scores=[]
-    rmse_scores=[]
-    r_squared_scores=[]
     rmsle_scores=[]
+
+    ps= { 
+    'hidden_layer_sizes': tuple([params['hidden_neurons']] * params['hidden_layers']),
+    "max_iter":params["max_iter"],
+    "learning_rate_init": params["learning_rate_init"],
+    "batch_size":params["batch_size"],
+    "learning_rate":params["learning_rate"]
+    }
+
+    model.set_params(**ps)
 
     for train_index, test_index in kf.split(X):
 
@@ -41,32 +52,16 @@ def train_model(X, y, model, num_folds=5):
         y_pred = model.predict(X_test)
         y_pred = np.clip(y_pred, a_min=1e-6, a_max=None) 
         
-        # Calculate mean squared error for the test set
-        mse = mean_squared_error(y_test, y_pred)
-        rmse = np.sqrt(mse)
-        r_squared = r2_score(y_test, y_pred)
+        # Calculate mean squared log error for the test set
         rmsle = np.sqrt(mean_squared_log_error(y_test, y_pred))
 
         # add metrics to list
-        mse_scores.append(mse)
-        rmse_scores.append(rmse)
-        r_squared_scores.append(r_squared)
         rmsle_scores.append(rmsle)
 
-
-    # average metric scores
-    average_mse = np.mean(mse_scores)
-    average_rmse= np.mean(rmse_scores)
-    average_r2= np.mean(r_squared_scores)
     average_rmsle= np.mean(rmsle_scores)
 
-    metrics={"mse":average_mse,
-            "rmse":average_rmse,
-            "r_2":average_r2,
-            "rmsle":average_rmsle
-            }
+    return average_rmsle
 
-    return model, metrics
 
 if __name__=="__main__":
 
@@ -84,7 +79,7 @@ if __name__=="__main__":
     # sample the dataset if it's larger than 10000
     if df.shape[0]>10000:
         logging.info('Sampling data since df_size > 10000.')
-        df_sampled= dp.sample_df(df, sample_size=20000)
+        df_sampled= dp.sample_df(df, sample_size=200)
         sample= True
     else:
         df_sampled= df.copy()
@@ -92,13 +87,44 @@ if __name__=="__main__":
     # preprocess the data 
     logging.info('Preprocessing started')
     start= time.time()
-    X,y= dp.preprocessing_pipe( df_sampled, cfg.TEXT_PREP_OPTS['nltk'], cfg.COL_TRANS_OPTS['tfidf'])
+    X,y= dp.preprocessing_pipe( df_sampled, cfg.TEXT_PREP_OPTS['nltk'], cfg.COL_TRANS_OPTS['tfidf_concat'])
     end= time.time()
     logging.info(f'Preprocessing complete. Total time taken:{end-start} seconds')
     logging.info(f'Preprocessed X shape:{X.shape}, y shape:{y.shape}')
 
     # train the model
-    mdl= md.models['huber']
-    model,metrics= train_model(X, y.values, model=mdl)
-    logging.info(f"Model parameters:{mdl.get_params()} ")
-    logging.info(f"Model metrics on the validation set:{metrics}")
+    mdl= md.models['mlp']
+
+    # define optimization function
+    optmization_function=partial(optimize,
+                             X=X,
+                             y=y.values,
+                             model=mdl)
+
+    # define trials 
+    trials=Trials()
+
+    result=fmin(fn=optmization_function,
+            space=md.PARAMS,
+            algo=tpe.suggest,
+            max_evals=15,
+            trials=trials,
+            )
+
+    # create param dictionary
+    lr_type=["invscaling","adaptive"]
+
+    ps= { 
+    'hidden_layer_sizes': tuple([int(result['hidden_neurons'])] * int(result['hidden_layers'])),
+    "max_iter":int(result["max_iter"]),
+    "learning_rate_init": float(result["learning_rate_init"]),
+    "batch_size":int(result["batch_size"]),
+    "learning_rate":lr_type[int(result["learning_rate"])]
+    }
+
+    # set optimized parameters
+    mdl.set_params(**ps)
+
+    # train the model
+    model,metrics= tr.train_model(X, y.values, model=mdl)
+    logging.info(f"Model parameters:{model.get_params()} ")

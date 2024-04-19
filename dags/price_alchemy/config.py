@@ -31,20 +31,7 @@ class WordVectorTransformer(TransformerMixin,BaseEstimator):
 
 
 COL_TRANS_OPTS={
-    "tfidf": ColumnTransformer([('categories', OrdinalEncoder(dtype='int'),['brand_name','parent_category', 'child_category', 'grandchild_category']),
-                ('name', TfidfVectorizer(max_features=10000), 'name'),
-                ('item_desc',TfidfVectorizer(max_features=10000),'item_description')
-                ],
-                remainder='passthrough',
-                verbose_feature_names_out=True) ,
-
-    "tfidf_2":ColumnTransformer([('categories', OrdinalEncoder(dtype='int'),['brand_name','parent_category', 'child_category', 'grandchild_category']),
-                ('name', TfidfVectorizer(max_features=5000), 'name'),
-                ('item_desc',TfidfVectorizer(max_features=5000),'item_description')
-                ],
-                remainder='passthrough',
-                verbose_feature_names_out=True) ,
-
+    
     "tfidf_concat":ColumnTransformer([('categories', OneHotEncoder(dtype='int'),['brand_name','parent_category', 'child_category', 'grandchild_category']),
                 ('text', TfidfVectorizer(max_features=10000), 'text'),
                 ],
@@ -86,3 +73,4 @@ TEXT_PREP_OPTS={
     "nltk": "version_1" ,
     "spacy": "version_2"
 }
+
