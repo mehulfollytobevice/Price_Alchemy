@@ -12,9 +12,13 @@ GCP_URL= 'https://storage.googleapis.com/price_alchemy/Data/data.csv'
 
 # name of the preprocessed data pickle file
 PREPROCESSED_DATA='preprocessed_data.pickle'
+DATA_DIR=r"/Users/mehuljain/Documents/course_related/ML_Ops/project/Price_Alchemy/data"
 
 # number of samples to be used while preprocessing the data
 NUM_SAMPLES=20000
+
+# test sample size
+TEST_SAMPLE_SIZE=200
 
 # preprocessing settings
 # function to convert text to vectors

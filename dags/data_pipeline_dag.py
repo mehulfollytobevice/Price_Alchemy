@@ -21,6 +21,13 @@ default_args = {
     'retries': 0 # NUmber of attempts in case of failure
 }
 
+
+# Define a function to separate data outputs
+def separate_data_outputs(**kwargs):
+    ti = kwargs['ti']
+    X, y = ti.xcom_pull(task_ids='data_preprocessing_task')
+    return X, y
+
 # Create DAG instance
 with DAG('Data_Pipeline', 
            default_args=default_args,
@@ -55,17 +62,32 @@ with DAG('Data_Pipeline',
     data_sampling_task = PythonOperator(
         task_id='data_sampling_task',
         python_callable=data_preprocessing.sample_df,
-        op_kwargs={"df":load_data_task.output,"sample_size":config.NUM_SAMPLES},
+        op_kwargs={"df":load_data_task.output,"sample_size":config.TEST_SAMPLE_SIZE},
     )
 
     # Task to perform data preprocessing, depends on 'load_data_task'
     data_preprocessing_task = PythonOperator(
         task_id='data_preprocessing_task',
         python_callable=data_preprocessing.preprocessing_pipe,
-        op_kwargs={"df":data_sampling_task.output,"text_prep_func":config.TEXT_PREP_OPTS['nltk'], "column_trans":config.COL_TRANS_OPTS['tfidf']},
-        do_xcom_push= False
+        op_kwargs={"df":data_sampling_task.output,"text_prep_func":config.TEXT_PREP_OPTS['nltk'], "column_trans":config.COL_TRANS_OPTS['tfidf_concat']},
+        do_xcom_push= True
+    )
+
+    # Task to execute the 'separate_data_outputs' function
+    separate_data_outputs_task = PythonOperator(
+        task_id='separate_data_outputs_task',
+        python_callable=separate_data_outputs,
+        provide_context=True
+        )
+
+    # Task to save the preprocessed data
+    data_saving_task = PythonOperator(
+        task_id='data_saving_task',
+        python_callable=data_preprocessing.dump_preprocessed_data,
+        op_args=[separate_data_outputs_task.output, "airflow_preprocessed.pkl", True], 
+        do_xcom_push= True
     )
 
 
     # Set task dependencies
-    load_data_task  >> data_validation_pandera_task >> data_validation_gx_task >> data_sampling_task >> data_preprocessing_task 
+    load_data_task  >> [data_validation_pandera_task, data_validation_gx_task , data_sampling_task] >> data_preprocessing_task >> separate_data_outputs_task >> data_saving_task

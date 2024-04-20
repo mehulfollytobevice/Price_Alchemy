@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import logging
 import time
+import os
+from pathlib import Path
 import pickle
 from price_alchemy import logging_setup, data_loading, config
 
@@ -11,10 +13,6 @@ from nltk.stem import PorterStemmer
 import spacy
 import re
 from tqdm import tqdm
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OrdinalEncoder
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-import uuid
 
 # HELPER FUNCTIONS
 
@@ -241,16 +239,29 @@ def preprocessing_pipe(df,text_prep_func, column_trans, save_file=False):
     return X, y
 
 # function to save the data
-def dump_preprocessed_data(X, y, filename):
+def dump_preprocessed_data(data,filename, if_airflow=False):
+    
+    # seperate X and y 
+    X, y = data
 
     data={
         'X':X,
         'y':y
     }
 
-    # save data to pickle file
-    with open(filename, 'wb') as handle:
-        pickle.dump(data, handle)
+    if if_airflow:
+
+        # define the output path 
+        output_path = os.path.join( os.getcwd(), "working_data" , filename)
+        output_path= Path(output_path)
+    
+    else:
+        # what's the file path
+        output_path = os.path.join( config.DATA_DIR , filename)
+        output_path= Path(output_path)
+
+    # Save the trained model to a file
+    pickle.dump(data , open(output_path, 'wb'))
 
 
 if __name__=="__main__":
@@ -283,12 +294,12 @@ if __name__=="__main__":
     logging.info(f'Preprocessed X shape:{X.shape}, y shape:{y.shape}')
 
     # save data
-    filename= config.PREPROCESSED_DATA
-    if sample: 
-        filename=  f"sample_" + filename
+    # filename= config.PREPROCESSED_DATA
+    # if sample: 
+    #     filename=  f"sample_" + filename
     
-    logging.info('Saving data.')
-    dump_preprocessed_data(X, y.values, filename)
+    # logging.info('Saving data.')
+    # dump_preprocessed_data(X, y.values, filename)
 
 
 
