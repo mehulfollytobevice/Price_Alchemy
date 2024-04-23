@@ -1,11 +1,13 @@
 pandas>=2
 nltk
+spacy
 scikit-learn
 sqlalchemy
 mysql-connector-python>8
 google-cloud-storage
 great-expectations
 pandera
+hyperopt
 
 [testing]
 pytest>=6.0
