@@ -18,7 +18,7 @@ DATA_DIR=r"/Users/mehuljain/Documents/course_related/ML_Ops/project/Price_Alchem
 NUM_SAMPLES=20000
 
 # test sample size
-TEST_SAMPLE_SIZE=200
+TEST_SAMPLE_SIZE=2000
 
 # preprocessing settings
 # function to convert text to vectors
@@ -37,38 +37,38 @@ class WordVectorTransformer(TransformerMixin,BaseEstimator):
 COL_TRANS_OPTS={
     
     "tfidf_concat":ColumnTransformer([('categories', OneHotEncoder(dtype='int'),['brand_name','parent_category', 'child_category', 'grandchild_category']),
-                ('text', TfidfVectorizer(max_features=10000), 'text'),
+                ('vectorizer', TfidfVectorizer(max_features=10000), 'text'),
                 ],
                 remainder='passthrough',
                 verbose_feature_names_out=True),
 
     'tfidf_full':  ColumnTransformer([
                 ('categories', OneHotEncoder(dtype='int'),['brand_name','parent_category', 'child_category', 'grandchild_category']),
-                ('text', TfidfVectorizer(), 'text'),
+                ('vectorizer', TfidfVectorizer(), 'text'),
                 ],
                 remainder='passthrough',
                 verbose_feature_names_out=True),
     
     "tfidf_bigram":ColumnTransformer([('categories', OneHotEncoder(dtype='int'),['brand_name','parent_category', 'child_category', 'grandchild_category']),
-                ('text', TfidfVectorizer(ngram_range=(2,2), max_features=10000), 'text'),
+                ('vectorizer', TfidfVectorizer(ngram_range=(2,2), max_features=10000), 'text'),
                 ],
                 remainder='passthrough',
                 verbose_feature_names_out=True),
 
     "tfidf_ngram":ColumnTransformer([('categories', OneHotEncoder(dtype='int'),['brand_name','parent_category', 'child_category', 'grandchild_category']),
-                ('text', TfidfVectorizer(ngram_range=(1,3), max_features=20000), 'text'),
+                ('vectorizer', TfidfVectorizer(ngram_range=(1,3), max_features=20000), 'text'),
                 ],
                 remainder='passthrough',
                 verbose_feature_names_out=True),
 
     "tfidf_chargram": ColumnTransformer([('categories', OneHotEncoder(dtype='int'),['brand_name','parent_category', 'child_category', 'grandchild_category']),
-                ('text', TfidfVectorizer(analyzer='char',ngram_range=(3,8), max_features=20000), 'text'),
+                ('vectorizer', TfidfVectorizer(analyzer='char',ngram_range=(3,8), max_features=20000), 'text'),
                 ],
                 remainder='passthrough',
                 verbose_feature_names_out=True),
 
     "word_vector": ColumnTransformer([('categories', OneHotEncoder(dtype='int'),['brand_name','parent_category', 'child_category', 'grandchild_category']),
-                ('text', WordVectorTransformer(), 'text')],
+                ('vectorizer', WordVectorTransformer(), 'text')],
                 remainder='passthrough',
                 verbose_feature_names_out=True),
 }

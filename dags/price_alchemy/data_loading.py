@@ -36,6 +36,9 @@ def load_data_sql(PASSWORD):
     # Create a DataFrame from the query result
     frame = pd.DataFrame(cursor.fetchall(), columns=column_names)
 
+    # filter such that every category has atleast 50 records
+    frame= frame.groupby('category_name').filter(lambda x: len(x) >= 50)
+
     # Close cursor and connection
     cursor.close()
     connection.close()
@@ -48,6 +51,10 @@ def load_data_gcp(gcp_url):
     try:
 
         df = pd.read_csv(gcp_url)
+
+        # filter such that every category has atleast 50 records
+        df= df.groupby('category_name').filter(lambda x: len(x) >= 50)
+
         return df 
     
     except:

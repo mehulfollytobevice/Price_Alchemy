@@ -193,7 +193,7 @@ def feature_transform(df, column_trans):
     return X, y
 
 # MAIN PREPROCESSING FUNCTION
-def preprocessing_pipe(df,text_prep_func, column_trans, save_file=False):
+def preprocessing_pipe(df,text_prep_func, column_trans, if_airflow= False, filename= ''):
 
     # basic preprocessing on the data
     df= data_manipulation(df)
@@ -232,9 +232,14 @@ def preprocessing_pipe(df,text_prep_func, column_trans, save_file=False):
     # transform the data using column transformer
     X= column_trans.fit_transform(X)
 
-    # save the data 
-    if save_file:
-        dump_preprocessed_data(X, y.values, config.PREPROCESSED_DATA)
+    # save the data
+    if if_airflow:
+        output_path = os.path.join(os.getcwd(), "working_data" , filename)
+        
+        data_req={'text_preprocessor': text_prep_func , "column_transformer": column_trans}
+
+        # Save the trained model to a file
+        pickle.dump(data_req , open(output_path, 'wb'))
 
     return X, y
 
@@ -253,12 +258,10 @@ def dump_preprocessed_data(data,filename, if_airflow=False):
 
         # define the output path 
         output_path = os.path.join( os.getcwd(), "working_data" , filename)
-        output_path= Path(output_path)
     
     else:
         # what's the file path
         output_path = os.path.join( config.DATA_DIR , filename)
-        output_path= Path(output_path)
 
     # Save the trained model to a file
     pickle.dump(data , open(output_path, 'wb'))

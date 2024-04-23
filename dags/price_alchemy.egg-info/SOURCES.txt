@@ -7,6 +7,7 @@ dags/price_alchemy/config.py
 dags/price_alchemy/data_loading.py
 dags/price_alchemy/data_preprocessing.py
 dags/price_alchemy/data_validation.py
+dags/price_alchemy/hpo.py
 dags/price_alchemy/logging_setup.py
 dags/price_alchemy/model_dispatcher.py
 dags/price_alchemy/train.py
@@ -18,3 +19,4 @@ dags/price_alchemy.egg-info/requires.txt
 dags/price_alchemy.egg-info/top_level.txt
 tests/test_data_prep.py
 tests/test_data_val.py
+tests/test_train.py

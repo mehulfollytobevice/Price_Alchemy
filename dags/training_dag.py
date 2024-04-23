@@ -1,11 +1,15 @@
 #  import essentials
 from airflow import DAG
 from airflow import configuration as conf
+from airflow.models.baseoperator import chain
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
 from price_alchemy import config, model_dispatcher, train
 import pickle 
 import os
+import glob
+now = datetime.now()
+timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
 
 #Define Github repo, owner and endpoint
 github_repo = "mehulfollytobevice/Price_Alchemy"
@@ -34,11 +38,36 @@ def load_preprocessed_data(filename):
 
     return data['X'], data['y']
 
-# utility function to train the model
-def airflow_train(data, model_name):
+# utility function to dump trained model into a pickle file
+def dump_trained_model(model, filename):
 
-    # seperate data 
-    X, y= data
+    filename= filename +".pickle" 
+
+    # what's the output path
+    output_path = os.path.join( os.getcwd() ,"working_data" ,"models" , filename)
+
+    # dump the pickle data
+    pickle.dump(model , open(output_path, 'wb'))
+
+# read the most recent file 
+def read_most_recent_file(folder, pattern):
+    # Get list of files matching the pattern
+    files = glob.glob(os.path.join(folder, pattern))
+    # Sort files by modification time (most recent first)
+    files.sort(key=os.path.getmtime, reverse=True)
+    if files:
+        most_recent_file = files[0]
+        
+    return most_recent_file
+
+# utility function to train the model
+def airflow_train(model_name, folder, pattern):
+
+    folder= os.path.join( os.getcwd() ,"working_data" , folder)
+    filename= read_most_recent_file(folder, pattern)
+
+    # load data from pickle file
+    X, y= load_preprocessed_data(filename)
 
     # get model from dispatch
     model= model_dispatcher.models[model_name]
@@ -46,16 +75,11 @@ def airflow_train(data, model_name):
     # train model
     trained_model, metrics= train.train_model(X, y.values, model)
 
+    # save the trained model
+    model_name= model_name + "_" + f"{timestamp}" 
+    dump_trained_model(trained_model, model_name)
+
     return trained_model, metrics
-
-# utility function to dump trained model into a pickle file
-def dump_trained_model(model, filename):
-
-    # what's the output path
-    output_path = os.path.join( os.getcwd() ,"working_data" , filename)
-
-    # dump the pickle data
-    pickle.dump(model , open(output_path, 'wb'))
 
 # Create DAG instance
 with DAG('Training_pipeline', 
@@ -66,64 +90,27 @@ with DAG('Training_pipeline',
 ) as dag:
 
 
-    # Task to load data, calls the 'load_data' Python function
-    load_data_task = PythonOperator(
-        task_id = 'load_data_task',
-        python_callable=load_preprocessed_data,
-        execution_timeout=timedelta(minutes= 2),
-        op_kwargs={"filename":"tfidf_concat_data_sm.pickle"}
-    )
-
     # Task to perform model training
-    model_train_task= PythonOperator(
-        task_id= 'model_train_task',
+    model_train_task_A= PythonOperator(
+        task_id= 'model_train_task_A',
         python_callable=airflow_train,
-        op_args=[load_data_task.output,'mlp']
+        op_args=['mlp_tfidf', "model_data" , "tfidf_concat_*"],
+        do_xcom_push= False
     )
 
-    # Task to save model 
-    save_model_task= PythonOperator(
-        task_id= 'save_model_task',
-        python_callable= dump_trained_model,
-        op_args=[model_train_task.output,"mlp.pickle"]
+    model_train_task_B= PythonOperator(
+        task_id= 'model_train_task_B',
+        python_callable=airflow_train,
+        op_args=['mlp_chargram', "model_data", "tfidf_chargram_*"],
+        do_xcom_push= False
     )
 
-    # data_validation_pandera_task = PythonOperator(
-    #     task_id='data_validation_pandera_task',
-    #     python_callable=data_validation.pandera_validate,
-    #     op_kwargs={"df":load_data_task.output}
-    # )
-
-    # # sample a part of the dataframe
-    # data_sampling_task = PythonOperator(
-    #     task_id='data_sampling_task',
-    #     python_callable=data_preprocessing.sample_df,
-    #     op_kwargs={"df":load_data_task.output,"sample_size":config.TEST_SAMPLE_SIZE},
-    # )
-
-    # # Task to perform data preprocessing, depends on 'load_data_task'
-    # data_preprocessing_task = PythonOperator(
-    #     task_id='data_preprocessing_task',
-    #     python_callable=data_preprocessing.preprocessing_pipe,
-    #     op_kwargs={"df":data_sampling_task.output,"text_prep_func":config.TEXT_PREP_OPTS['nltk'], "column_trans":config.COL_TRANS_OPTS['tfidf_concat']},
-    #     do_xcom_push= True
-    # )
-
-    # # Task to execute the 'separate_data_outputs' function
-    # separate_data_outputs_task = PythonOperator(
-    #     task_id='separate_data_outputs_task',
-    #     python_callable=separate_data_outputs,
-    #     provide_context=True
-    #     )
-
-    # # Task to save the preprocessed data
-    # data_saving_task = PythonOperator(
-    #     task_id='data_saving_task',
-    #     python_callable=data_preprocessing.dump_preprocessed_data,
-    #     op_args=[separate_data_outputs_task.output, "airflow_preprocessed.pkl"], 
-    #     do_xcom_push= True
-    # )
-
+    model_train_task_C= PythonOperator(
+        task_id= 'model_train_task_C',
+        python_callable=airflow_train,
+        op_args=['mlp_ngram', "model_data" , "tfidf_ngram_*"],
+        do_xcom_push= False
+    )
 
     # Set task dependencies
-    load_data_task >> model_train_task >> save_model_task
+    model_train_task_A >> model_train_task_B >> model_train_task_C 

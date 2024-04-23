@@ -41,7 +41,9 @@ The dataset provided consists of information on product listings, designed for a
 
 - __notebooks/:__ Jupyter notebooks for exploratory data analysis, data preprocessing, model development, and evaluation are stored in this directory.
 
-- __src/:__ This directory contains subdirectories for different aspects of the project's source code, including data loading and preprocessing (data/), modeling (modeling/), and model evaluation (evaluation/). Each subdirectory contains Python modules with relevant functions and classes.
+- __dags/:__ This directory contains the source code for Airflow DAGs that aim to automate various aspects of the machine learning pipeline developed in the project. Furthermore, it contains the source code for the `price_alchemy` module which provides classes and functions for managing different parts of the ML workflow, including data loading, data validation and data preprocessing, modeling, and model evaluation.
+
+- __tests/:__ This directory contains unit tests, integration tests, or any other tests relevant to the project. 
 
 - __models/:__ Saved model files generated during model training are stored in this directory.
 
