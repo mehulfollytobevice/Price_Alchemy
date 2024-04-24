@@ -15,6 +15,7 @@ import pandas as pd
 import glob
 from datetime import datetime
 import logging
+from price_alchemy.cred import MYSQL_PASSWORD
 
 now = datetime.now()
 timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")

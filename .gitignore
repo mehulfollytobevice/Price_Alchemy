@@ -19,3 +19,4 @@ ringed-reserve-416823-b54bbb8174c1.json
 .DS_Store
 .ipynb_checkpoints
 ELK/
+dags/price_alchemy/cred.py

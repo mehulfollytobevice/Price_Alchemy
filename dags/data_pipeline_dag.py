@@ -70,7 +70,7 @@ with DAG('Data_Pipeline',
     data_sampling_task = PythonOperator(
         task_id='data_sampling_task',
         python_callable=data_preprocessing.sample_df,
-        op_kwargs={"df":load_data_task.output,"sample_size":config.TEST_SAMPLE_SIZE},
+        op_kwargs={"df":load_data_task.output,"sample_size":config.NUM_SAMPLES},
     )
 
     # logging function

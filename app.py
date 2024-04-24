@@ -13,36 +13,54 @@ from nltk.stem import PorterStemmer
 import spacy
 import re
 from tqdm import tqdm
+import glob
+
+# read the most recent file 
+def read_most_recent_file(folder, pattern):
+    # Get list of files matching the pattern
+    files = glob.glob(os.path.join(folder, pattern))
+    # Sort files by modification time (most recent first)
+    files.sort(key=os.path.getmtime, reverse=True)
+    if files:
+        most_recent_file = files[0]
+        
+    return most_recent_file
 
 # load the models 
-output_path = os.path.join( os.getcwd() ,"working_data", "mlp_tfidf.pickle")
+output_path = os.path.join( os.getcwd() ,"working_data", "models")
+output_path = read_most_recent_file(output_path, "mlp_tfidf*")
 with open(output_path, "rb") as f:
     # Load the pickled object
     m1 = pickle.load(f)
 
-output_path = os.path.join( os.getcwd() ,"working_data", "mlp_ngram.pickle")
+output_path = os.path.join( os.getcwd() ,"working_data", "models")
+output_path = read_most_recent_file(output_path, "mlp_ngram*")
 with open(output_path, "rb") as f:
     # Load the pickled object
     m2 = pickle.load(f)
 
-output_path = os.path.join( os.getcwd() ,"working_data", "mlp_chargram.pickle")
+output_path = os.path.join( os.getcwd() ,"working_data", "models")
+output_path = read_most_recent_file(output_path, "mlp_chargram*")
 with open(output_path, "rb") as f:
     # Load the pickled object
     m3 = pickle.load(f)
 
 
 # load the preprocessors
-output_path = os.path.join( os.getcwd() ,"working_data" , "tidf_concat_preprocessor.pickle")
+output_path = os.path.join( os.getcwd() ,"working_data", "preprocessors")
+output_path = read_most_recent_file(output_path, "tidf_concat*")
 with open(output_path, "rb") as f:
     # Load the pickled object
     d1 = pickle.load(f)
 
-output_path = os.path.join( os.getcwd() ,"working_data" , "tidf_ngram_preprocessor.pickle")
+output_path = os.path.join( os.getcwd() ,"working_data", "preprocessors")
+output_path = read_most_recent_file(output_path, "tidf_ngram*")
 with open(output_path, "rb") as f:
     # Load the pickled object
     d2 = pickle.load(f)
 
-output_path = os.path.join( os.getcwd() ,"working_data" , "tidf_chargram_preprocessor.pickle")
+output_path = os.path.join( os.getcwd() ,"working_data", "preprocessors")
+output_path = read_most_recent_file(output_path, "tidf_chargram*")
 with open(output_path, "rb") as f:
     # Load the pickled object
     d3 = pickle.load(f)
@@ -206,16 +224,19 @@ async def model_details():
         # Get model details
         model_info = {"model1":{
             "model_type": str(type(m1)),
-            "model_details": str(m1)
+            "model_details": str(m1),
+            "preprocessor": str(d1)
             },
 
             "model2":{
             "model_type": str(type(m2)),
-            "model_details": str(m2)
+            "model_details": str(m2),
+            "preprocessor": str(d2)
             },
             "model3":{
             "model_type": str(type(m3)),
-            "model_details": str(m3)
+            "model_details": str(m3),
+            "preprocessor": str(d3)
             }
             
         }
