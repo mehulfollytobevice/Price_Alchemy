@@ -6,6 +6,7 @@
 - This repository contains the code for **"Price Alchemy Project"**.
 - Using this project, we can intelligently suggest optimal price points for a diverse array of products listed on Mercari.
 - This project focuses on the application of MLOps and fundamental ML algorithms to accomplish the above mentioned task.
+- There is a blog post based on this project, you can find it [here](https://mehulfollytobevice.github.io/my_blogs2/posts/2024-05-15-pricealchemy.html)
   
 ## 📝 Description
 - Given the complexity and scale of online marketplaces today, accurately pricing products can be a daunting task for sellers. This project aims to develop an algorithm capable of automatically suggesting appropriate prices for products listed on Mercari, Japan's largest community-powered shopping app. The challenge underscores the difficulty of product pricing, which can vary significantly based on minute details, brand names, seasonal trends, and product specifications.
